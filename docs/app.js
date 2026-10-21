@@ -44,6 +44,8 @@ onAuthStateChanged(auth, (user) => {
   $("#app").hidden = !user;
   if (!user) return;
   $("#usuario-nome").textContent = nomeUsuario(user);
+  $("#ola-nome").textContent = nomeUsuario(user);
+  ir("home");
   unsubs.push(
     onSnapshot(query(collection(db, "produtos"), orderBy("nome")), (snap) => {
       produtos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -56,13 +58,15 @@ onAuthStateChanged(auth, (user) => {
   );
 });
 
-/* ---------- Abas ---------- */
-document.querySelectorAll(".aba").forEach((b) =>
-  b.addEventListener("click", () => {
-    document.querySelectorAll(".aba").forEach((x) => x.classList.toggle("ativa", x === b));
-    document.querySelectorAll(".painel").forEach((p) => (p.hidden = p.id !== "aba-" + b.dataset.aba));
-  })
-);
+/* ---------- Navegação ---------- */
+function ir(nome) {
+  document.querySelectorAll("main > section").forEach((s) => (s.hidden = s.id !== "aba-" + nome));
+  window.scrollTo(0, 0);
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-ir]");
+  if (b) ir(b.dataset.ir);
+});
 
 /* ---------- Produtos ---------- */
 $("#produto-form").addEventListener("submit", async (e) => {
@@ -81,6 +85,7 @@ $("#produto-form").addEventListener("submit", async (e) => {
 $("#busca").addEventListener("input", renderProdutos);
 
 function renderProdutos() {
+  $("#info-produtos").textContent = produtos.length ? `${produtos.length} cadastrados · ${produtos.reduce((s, p) => s + p.qtd, 0)} peças em estoque` : "Cadastrar e controlar o estoque";
   const termo = $("#busca").value.toLowerCase();
   const lista = produtos.filter((p) => p.nome.toLowerCase().includes(termo));
   $("#lista-produtos").innerHTML = lista.length
@@ -161,6 +166,8 @@ $("#venda-form").addEventListener("submit", async (e) => {
 
 /* ---------- Histórico ---------- */
 function renderVendas(vendas) {
+  const pend = vendas.filter((v) => v.status === "pendente").length;
+  $("#info-vendas").textContent = pend ? `${pend} ${pend === 1 ? "pagamento a receber" : "pagamentos a receber"}` : "Ver quem vendeu, como e onde";
   $("#lista-vendas").innerHTML = vendas.length
     ? vendas.map((v) => {
       const d = v.data?.toDate ? v.data.toDate().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "agora";
