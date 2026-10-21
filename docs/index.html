@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rosamenina · Estoque e vendas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:ital,wght@1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="login" class="login">
+  <form id="login-form" class="login-card">
+    <h1 class="logo">Rosamenina</h1>
+    <p class="muted">Entre para gerenciar estoque e vendas.</p>
+    <label>E-mail<input type="email" id="email" required autocomplete="username"></label>
+    <label>Senha<input type="password" id="senha" required autocomplete="current-password"></label>
+    <p id="login-erro" class="erro" hidden></p>
+    <button class="btn" type="submit">Entrar</button>
+  </form>
+</section>
+
+<!-- APP -->
+<div id="app" hidden>
+  <header class="topo">
+    <span class="logo">Rosamenina</span>
+    <nav class="abas">
+      <button class="aba ativa" data-aba="venda">Registrar venda</button>
+      <button class="aba" data-aba="produtos">Produtos</button>
+      <button class="aba" data-aba="historico">Vendas</button>
+    </nav>
+    <div class="usuario"><span id="usuario-nome"></span><button id="sair" class="btn-link">Sair</button></div>
+  </header>
+
+  <main>
+    <!-- VENDA -->
+    <section id="aba-venda" class="painel">
+      <h2>Registrar venda</h2>
+      <form id="venda-form" class="grade">
+        <label class="largo">Produto
+          <select id="v-produto" required></select>
+        </label>
+        <label>Quantidade<input type="number" id="v-qtd" min="1" value="1" required></label>
+        <label>Total<input type="text" id="v-total" readonly></label>
+
+        <fieldset class="largo">
+          <legend>Forma de pagamento</legend>
+          <div class="chips" id="v-pagamento">
+            <label><input type="radio" name="pag" value="Pix" required><span>Pix</span></label>
+            <label><input type="radio" name="pag" value="Crédito"><span>Crédito</span></label>
+            <label><input type="radio" name="pag" value="Débito"><span>Débito</span></label>
+            <label><input type="radio" name="pag" value="Dinheiro"><span>Dinheiro</span></label>
+            <label><input type="radio" name="pag" value="Pagamento tardio"><span>Pagamento tardio</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="largo">
+          <legend>Unidade</legend>
+          <div class="chips">
+            <label><input type="radio" name="unid" value="Guamá" required><span>Guamá</span></label>
+            <label><input type="radio" name="unid" value="Guanabara"><span>Guanabara</span></label>
+            <label><input type="radio" name="unid" value="Não se aplica"><span>Não se aplica</span></label>
+          </div>
+        </fieldset>
+
+        <label class="largo">Observação (opcional)<input type="text" id="v-obs" placeholder="Ex.: nome da cliente, combinado de pagamento"></label>
+        <button class="btn largo" type="submit">Registrar venda</button>
+      </form>
+    </section>
+
+    <!-- PRODUTOS -->
+    <section id="aba-produtos" class="painel" hidden>
+      <h2>Produtos</h2>
+      <form id="produto-form" class="grade linha">
+        <label class="largo">Nome<input type="text" id="p-nome" required></label>
+        <label>Preço (R$)<input type="number" id="p-preco" step="0.01" min="0" required></label>
+        <label>Estoque<input type="number" id="p-qtd" min="0" required></label>
+        <button class="btn" type="submit">Adicionar</button>
+      </form>
+      <input type="search" id="busca" class="busca" placeholder="Buscar produto">
+      <div id="lista-produtos" class="lista"></div>
+    </section>
+
+    <!-- HISTÓRICO -->
+    <section id="aba-historico" class="painel" hidden>
+      <h2>Vendas registradas</h2>
+      <div id="lista-vendas" class="lista"></div>
+    </section>
+  </main>
+</div>
+
+<div id="aviso" class="aviso" role="status" hidden></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
