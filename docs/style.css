@@ -98,3 +98,9 @@ textarea{font:inherit;padding:11px 12px;border:1.5px solid var(--borda);border-r
 .grade.tres{grid-template-columns:repeat(3,1fr);margin-bottom:20px}
 .desc{display:block;color:var(--muda);font-size:.85rem;margin-top:2px;max-width:46ch}
 @media(max-width:640px){.grade.tres{grid-template-columns:1fr}}
+
+.resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px}
+.stat{background:var(--rosa-bg);border:1px solid var(--borda);border-radius:14px;padding:14px 16px;display:grid;gap:4px}
+.stat small{color:var(--muda);font-size:.8rem}
+.stat b{font-family:'Fraunces',serif;font-size:1.5rem;color:var(--rosa-escuro)}
+.stat.atencao b.alerta{color:var(--alerta)}
