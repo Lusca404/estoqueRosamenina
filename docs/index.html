@@ -6,7 +6,7 @@
 <title>Rosamenina · Estoque e vendas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:ital,wght@1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -33,20 +33,21 @@
   <main>
     <!-- INÍCIO -->
     <section id="aba-home" class="painel-home">
-      <h2 class="ola">Olá, <span id="ola-nome"></span>! O que vamos fazer?</h2>
+      <h2 class="ola">Olá, <span id="ola-nome"></span></h2>
+      <p class="muted ola-sub">O que você quer fazer hoje?</p>
       <div class="menu">
-        <button class="cartao" data-ir="venda">
-          <span class="icone">🛍️</span>
+        <button class="cartao principal" data-ir="venda">
+          <span class="icone"><svg viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span>
           <b>Registrar venda</b>
           <small>Lançar uma venda nova e dar baixa no estoque</small>
         </button>
         <button class="cartao" data-ir="produtos">
-          <span class="icone">🎀</span>
+          <span class="icone"><svg viewBox="0 0 24 24"><path d="M4 4h7l9 9-7 7-9-9V4z"/><circle cx="8" cy="8" r="1.2"/></svg></span>
           <b>Produtos</b>
           <small id="info-produtos">Cadastrar e controlar o estoque</small>
         </button>
         <button class="cartao" data-ir="historico">
-          <span class="icone">🧾</span>
+          <span class="icone"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9 8h6M9 12h6"/></svg></span>
           <b>Vendas realizadas</b>
           <small id="info-vendas">Ver quem vendeu, como e onde</small>
         </button>
@@ -60,6 +61,7 @@
         <label class="largo">Produto
           <select id="v-produto" required></select>
         </label>
+        <div id="v-prod-info" class="prod-info largo" hidden></div>
         <label>Quantidade<input type="number" id="v-qtd" min="1" value="1" required></label>
         <label>Total<input type="text" id="v-total" readonly></label>
 
@@ -99,14 +101,27 @@
         <div class="stat atencao"><small>Estoque baixo</small><b id="r-baixo">0</b></div>
         <div class="stat atencao"><small>Esgotados</small><b id="r-zero">0</b></div>
       </div>
+      <div class="formbox">
       <form id="produto-form" class="grade tres">
+        <h3 id="form-titulo" class="sub largo">Novo produto</h3>
+        <div class="foto-campo largo">
+          <div id="p-preview" class="thumb grande"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg></div>
+          <div class="foto-acoes">
+            <label class="btn-sec">Escolher foto<input type="file" id="p-foto" accept="image/*" hidden></label>
+            <button type="button" id="p-foto-rm" class="btn-link" hidden>Remover foto</button>
+          </div>
+        </div>
         <label class="largo">Nome<input type="text" id="p-nome" required></label>
         <label>Preço (R$)<input type="number" id="p-preco" step="0.01" min="0" required></label>
         <label>Valor no crédito (R$)<input type="number" id="p-credito" step="0.01" min="0" required></label>
         <label>Estoque<input type="number" id="p-qtd" min="0" required></label>
         <label class="largo">Descrição<textarea id="p-desc" rows="2" placeholder="Ex.: tamanho, cor, material, marca"></textarea></label>
-        <button class="btn largo" type="submit">Adicionar produto</button>
+        <div class="botoes largo">
+          <button class="btn" type="submit" id="p-salvar">Adicionar produto</button>
+          <button type="button" class="btn-sec" id="p-cancelar" hidden>Cancelar edição</button>
+        </div>
       </form>
+      </div>
       <input type="search" id="busca" class="busca" placeholder="Buscar produto">
       <div id="lista-produtos" class="lista"></div>
     </section>
