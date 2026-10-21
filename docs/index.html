@@ -26,18 +26,35 @@
 <!-- APP -->
 <div id="app" hidden>
   <header class="topo">
-    <span class="logo">Rosamenina</span>
-    <nav class="abas">
-      <button class="aba ativa" data-aba="venda">Registrar venda</button>
-      <button class="aba" data-aba="produtos">Produtos</button>
-      <button class="aba" data-aba="historico">Vendas</button>
-    </nav>
+    <button class="logo logo-btn" data-ir="home" aria-label="Voltar ao início">Rosamenina</button>
     <div class="usuario"><span id="usuario-nome"></span><button id="sair" class="btn-link">Sair</button></div>
   </header>
 
   <main>
+    <!-- INÍCIO -->
+    <section id="aba-home" class="painel-home">
+      <h2 class="ola">Olá, <span id="ola-nome"></span>! O que vamos fazer?</h2>
+      <div class="menu">
+        <button class="cartao" data-ir="venda">
+          <span class="icone">🛍️</span>
+          <b>Registrar venda</b>
+          <small>Lançar uma venda nova e dar baixa no estoque</small>
+        </button>
+        <button class="cartao" data-ir="produtos">
+          <span class="icone">🎀</span>
+          <b>Produtos</b>
+          <small id="info-produtos">Cadastrar e controlar o estoque</small>
+        </button>
+        <button class="cartao" data-ir="historico">
+          <span class="icone">🧾</span>
+          <b>Vendas realizadas</b>
+          <small id="info-vendas">Ver quem vendeu, como e onde</small>
+        </button>
+      </div>
+    </section>
     <!-- VENDA -->
-    <section id="aba-venda" class="painel">
+    <section id="aba-venda" class="painel" hidden>
+      <button class="voltar" data-ir="home">← Início</button>
       <h2>Registrar venda</h2>
       <form id="venda-form" class="grade">
         <label class="largo">Produto
@@ -73,6 +90,7 @@
 
     <!-- PRODUTOS -->
     <section id="aba-produtos" class="painel" hidden>
+      <button class="voltar" data-ir="home">← Início</button>
       <h2>Produtos</h2>
       <form id="produto-form" class="grade linha">
         <label class="largo">Nome<input type="text" id="p-nome" required></label>
@@ -86,7 +104,8 @@
 
     <!-- HISTÓRICO -->
     <section id="aba-historico" class="painel" hidden>
-      <h2>Vendas registradas</h2>
+      <button class="voltar" data-ir="home">← Início</button>
+      <h2>Vendas realizadas</h2>
       <div id="lista-vendas" class="lista"></div>
     </section>
   </main>
