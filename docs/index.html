@@ -92,6 +92,13 @@
     <section id="aba-produtos" class="painel" hidden>
       <button class="voltar" data-ir="home">← Início</button>
       <h2>Produtos</h2>
+      <div class="resumo">
+        <div class="stat"><small>Produtos cadastrados</small><b id="r-total">0</b></div>
+        <div class="stat"><small>Peças em estoque</small><b id="r-pecas">0</b></div>
+        <div class="stat"><small>Valor em estoque</small><b id="r-valor">R$ 0,00</b></div>
+        <div class="stat atencao"><small>Estoque baixo</small><b id="r-baixo">0</b></div>
+        <div class="stat atencao"><small>Esgotados</small><b id="r-zero">0</b></div>
+      </div>
       <form id="produto-form" class="grade tres">
         <label class="largo">Nome<input type="text" id="p-nome" required></label>
         <label>Preço (R$)<input type="number" id="p-preco" step="0.01" min="0" required></label>
