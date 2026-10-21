@@ -77,3 +77,19 @@ legend{font-size:.88rem;font-weight:500;margin-bottom:8px;padding:0}
   .painel{padding:18px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* tela inicial */
+.logo-btn{background:none;border:0;cursor:pointer;padding:0}
+.ola{font-size:1.5rem;margin:8px 0 24px}
+.menu{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.cartao{font:inherit;text-align:left;background:var(--branco);border:1.5px solid var(--borda);border-radius:20px;padding:28px 24px;cursor:pointer;display:grid;gap:8px;color:var(--texto);transition:transform .15s,border-color .15s,box-shadow .15s}
+.cartao:hover{border-color:var(--rosa);transform:translateY(-3px);box-shadow:0 12px 30px rgba(224,69,123,.15)}
+.cartao:first-child{background:var(--rosa);border-color:var(--rosa);color:#fff}
+.cartao:first-child small{color:#ffe3ee}
+.cartao b{font-size:1.15rem}
+.cartao small{color:var(--muda)}
+.icone{font-size:2rem;width:56px;height:56px;border-radius:16px;background:var(--rosa-claro);display:grid;place-items:center}
+.cartao:first-child .icone{background:rgba(255,255,255,.22)}
+.voltar{font:inherit;font-weight:500;background:var(--rosa-claro);color:var(--rosa-escuro);border:0;border-radius:999px;padding:7px 16px;cursor:pointer;margin-bottom:14px}
+.voltar:hover{background:var(--borda)}
+@media(max-width:640px){.menu{grid-template-columns:1fr}}
