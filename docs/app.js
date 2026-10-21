@@ -90,7 +90,20 @@ $("#produto-form").addEventListener("submit", async (e) => {
 
 $("#busca").addEventListener("input", renderProdutos);
 
+function renderResumo() {
+  const baixo = produtos.filter((p) => p.qtd > 0 && p.qtd <= 3).length;
+  const zero = produtos.filter((p) => p.qtd <= 0).length;
+  $("#r-total").textContent = produtos.length;
+  $("#r-pecas").textContent = produtos.reduce((s, p) => s + p.qtd, 0);
+  $("#r-valor").textContent = brl(produtos.reduce((s, p) => s + p.qtd * p.preco, 0));
+  $("#r-baixo").textContent = baixo;
+  $("#r-zero").textContent = zero;
+  $("#r-baixo").classList.toggle("alerta", baixo > 0);
+  $("#r-zero").classList.toggle("alerta", zero > 0);
+}
+
 function renderProdutos() {
+  renderResumo();
   $("#info-produtos").textContent = produtos.length ? `${produtos.length} cadastrados · ${produtos.reduce((s, p) => s + p.qtd, 0)} peças em estoque` : "Cadastrar e controlar o estoque";
   const termo = $("#busca").value.toLowerCase();
   const lista = produtos.filter((p) => p.nome.toLowerCase().includes(termo));
