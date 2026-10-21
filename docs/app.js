@@ -11,6 +11,11 @@ const brl = (n) => Number(n).toLocaleString("pt-BR", { style: "currency", curren
 const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 let produtos = [];
+let vendasCache = [];
+let editId = null;
+let fotoAtual = "";
+const ICONE_FOTO = '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>';
+const thumb = (src, cls = "") => `<div class="thumb ${cls}">${src ? `<img src="${src}" alt="">` : ICONE_FOTO}</div>`;
 let unsubs = [];
 
 function aviso(msg, erro = false) {
@@ -55,9 +60,11 @@ onAuthStateChanged(auth, (user) => {
       produtos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       renderProdutos();
       renderSelect();
+      renderVendas(vendasCache);
     }),
     onSnapshot(query(collection(db, "vendas"), orderBy("data", "desc"), limit(100)), (snap) => {
-      renderVendas(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      vendasCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderVendas(vendasCache);
     })
   );
 });
@@ -73,19 +80,78 @@ document.addEventListener("click", (e) => {
 });
 
 /* ---------- Produtos ---------- */
+// Reduz a foto no navegador e guarda como texto no Firestore (não precisa do Firebase Storage, que é pago)
+function reduzirImagem(file, max = 480) {
+  return new Promise((ok, erro) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const r = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * r);
+      c.height = Math.round(img.height * r);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      ok(c.toDataURL("image/jpeg", 0.75));
+    };
+    img.onerror = erro;
+    img.src = url;
+  });
+}
+function setFoto(src) {
+  fotoAtual = src;
+  $("#p-preview").innerHTML = src ? `<img src="${src}" alt="">` : ICONE_FOTO;
+  $("#p-foto-rm").hidden = !src;
+}
+$("#p-foto").addEventListener("change", async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  try { setFoto(await reduzirImagem(f)); } catch { aviso("Não foi possível ler essa imagem.", true); }
+  e.target.value = "";
+});
+$("#p-foto-rm").addEventListener("click", () => setFoto(""));
+
+function resetForm() {
+  editId = null;
+  $("#produto-form").reset();
+  setFoto("");
+  $("#form-titulo").textContent = "Novo produto";
+  $("#p-salvar").textContent = "Adicionar produto";
+  $("#p-cancelar").hidden = true;
+}
+function editar(id) {
+  const p = produtos.find((x) => x.id === id);
+  if (!p) return;
+  editId = id;
+  $("#p-nome").value = p.nome;
+  $("#p-preco").value = p.preco;
+  $("#p-credito").value = p.precoCredito ?? p.preco;
+  $("#p-qtd").value = p.qtd;
+  $("#p-desc").value = p.descricao || "";
+  setFoto(p.foto || "");
+  $("#form-titulo").textContent = "Editar produto";
+  $("#p-salvar").textContent = "Salvar alterações";
+  $("#p-cancelar").hidden = false;
+  $("#produto-form").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+$("#p-cancelar").addEventListener("click", resetForm);
+
 $("#produto-form").addEventListener("submit", async (e) => {
   e.preventDefault();
+  const dados = {
+    nome: $("#p-nome").value.trim(),
+    preco: parseFloat($("#p-preco").value),
+    precoCredito: parseFloat($("#p-credito").value),
+    qtd: parseInt($("#p-qtd").value, 10),
+    descricao: $("#p-desc").value.trim(),
+    foto: fotoAtual,
+  };
   try {
-    await addDoc(collection(db, "produtos"), {
-      nome: $("#p-nome").value.trim(),
-      preco: parseFloat($("#p-preco").value),
-      precoCredito: parseFloat($("#p-credito").value),
-      descricao: $("#p-desc").value.trim(),
-      qtd: parseInt($("#p-qtd").value, 10),
-    });
-    e.target.reset();
-    aviso("Produto adicionado.");
-  } catch { aviso("Não foi possível adicionar o produto.", true); }
+    if (editId) await updateDoc(doc(db, "produtos", editId), dados);
+    else await addDoc(collection(db, "produtos"), dados);
+    aviso(editId ? "Produto atualizado." : "Produto adicionado.");
+    resetForm();
+  } catch { aviso("Não foi possível salvar o produto. A foto pode estar grande demais.", true); }
 });
 
 $("#busca").addEventListener("input", renderProdutos);
@@ -110,11 +176,14 @@ function renderProdutos() {
   $("#lista-produtos").innerHTML = lista.length
     ? lista.map((p) => `
       <div class="item">
-        <div><b>${esc(p.nome)}</b><small>${brl(p.preco)} · no crédito ${brl(p.precoCredito ?? p.preco)}</small>${p.descricao ? `<span class="desc">${esc(p.descricao)}</span>` : ""}</div>
+        <div class="prod">${thumb(p.foto)}
+          <div><b>${esc(p.nome)}</b><small>${brl(p.preco)} · no crédito ${brl(p.precoCredito ?? p.preco)}</small>${p.descricao ? `<span class="desc">${esc(p.descricao)}</span>` : ""}</div>
+        </div>
         <div class="acoes">
           <button class="mini" data-ajuste="-1" data-id="${p.id}" aria-label="Diminuir estoque">−</button>
           <span class="qtd ${p.qtd <= 3 ? "baixo" : ""}">${p.qtd}</span>
           <button class="mini" data-ajuste="1" data-id="${p.id}" aria-label="Aumentar estoque">+</button>
+          <button class="mini ed" data-edit="${p.id}">Editar</button>
           <button class="mini del" data-del="${p.id}">Excluir</button>
         </div>
       </div>`).join("")
@@ -125,12 +194,15 @@ $("#lista-produtos").addEventListener("click", async (e) => {
   const b = e.target.closest("button");
   if (!b) return;
   try {
-    if (b.dataset.ajuste) {
+    if (b.dataset.edit) {
+      editar(b.dataset.edit);
+    } else if (b.dataset.ajuste) {
       const p = produtos.find((x) => x.id === b.dataset.id);
       if (p.qtd + Number(b.dataset.ajuste) < 0) return;
       await updateDoc(doc(db, "produtos", b.dataset.id), { qtd: increment(Number(b.dataset.ajuste)) });
     } else if (b.dataset.del && confirm("Excluir este produto?")) {
       await deleteDoc(doc(db, "produtos", b.dataset.del));
+      if (editId === b.dataset.del) resetForm();
     }
   } catch { aviso("Não foi possível atualizar o produto.", true); }
 });
@@ -145,6 +217,8 @@ function renderSelect() {
 }
 function atualizaTotal() {
   const p = produtos.find((x) => x.id === $("#v-produto").value);
+  $("#v-prod-info").hidden = !p;
+  if (p) $("#v-prod-info").innerHTML = `${thumb(p.foto)}<div><b>${esc(p.nome)}</b><small class="muted">${esc(p.descricao || "Sem descrição")}</small></div>`;
   $("#v-total").value = p ? brl(precoVenda(p, pagamentoAtual()) * (parseInt($("#v-qtd").value, 10) || 0)) : "";
 }
 $("#v-produto").addEventListener("change", atualizaTotal);
@@ -193,13 +267,13 @@ function renderVendas(vendas) {
       const d = v.data?.toDate ? v.data.toDate().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "agora";
       return `
       <div class="item">
-        <div>
+        <div class="prod">${thumb(produtos.find((x) => x.id === v.produtoId)?.foto)}<div>
           <b>${esc(v.produto)} × ${v.qtd}</b>
           <small>${d} · por ${esc(v.vendedor)}</small><br>
           <span class="tag">${esc(v.pagamento)}</span><span class="tag">${esc(v.unidade)}</span>
           <span class="tag ${v.status === "pendente" ? "pend" : "pago"}">${v.status === "pendente" ? "A receber" : "Pago"}</span>
           ${v.obs ? `<br><small>${esc(v.obs)}</small>` : ""}
-        </div>
+        </div></div>
         <div class="acoes">
           <span class="valor">${brl(v.total)}</span>
           ${v.status === "pendente" ? `<button class="mini del" style="color:var(--ok)" data-receber="${v.id}">Marcar como pago</button>` : ""}
