@@ -17,8 +17,8 @@ h2{font-size:1.25rem;margin:0 0 16px}
 
 /* formulários */
 label{display:grid;gap:6px;font-size:.88rem;font-weight:500}
-input,select{font:inherit;padding:11px 12px;border:1.5px solid var(--borda);border-radius:10px;background:var(--branco);color:var(--texto);width:100%}
-input:focus,select:focus,button:focus-visible{outline:3px solid rgba(224,69,123,.35);border-color:var(--rosa)}
+input,select,textarea{font:inherit;padding:11px 12px;border:1.5px solid var(--borda);border-radius:10px;background:var(--branco);color:var(--texto);width:100%}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid rgba(224,69,123,.35);border-color:var(--rosa)}
 input[readonly]{background:var(--rosa-claro);font-weight:700}
 .btn{font:inherit;font-weight:700;background:var(--rosa);color:#fff;border:0;border-radius:10px;padding:12px 20px;cursor:pointer;transition:background .15s}
 .btn:hover{background:var(--rosa-escuro)}
@@ -93,3 +93,8 @@ legend{font-size:.88rem;font-weight:500;margin-bottom:8px;padding:0}
 .voltar{font:inherit;font-weight:500;background:var(--rosa-claro);color:var(--rosa-escuro);border:0;border-radius:999px;padding:7px 16px;cursor:pointer;margin-bottom:14px}
 .voltar:hover{background:var(--borda)}
 @media(max-width:640px){.menu{grid-template-columns:1fr}}
+
+textarea{font:inherit;padding:11px 12px;border:1.5px solid var(--borda);border-radius:10px;width:100%;resize:vertical;color:var(--texto)}
+.grade.tres{grid-template-columns:repeat(3,1fr);margin-bottom:20px}
+.desc{display:block;color:var(--muda);font-size:.85rem;margin-top:2px;max-width:46ch}
+@media(max-width:640px){.grade.tres{grid-template-columns:1fr}}
