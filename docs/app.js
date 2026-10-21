@@ -22,6 +22,10 @@ function aviso(msg, erro = false) {
   aviso.t = setTimeout(() => (el.hidden = true), 3200);
 }
 
+// Preço aplicado conforme a forma de pagamento (produtos antigos sem valor no crédito usam o preço normal)
+const precoVenda = (p, pag) => (pag === "Crédito" && p.precoCredito != null ? p.precoCredito : p.preco);
+const pagamentoAtual = () => document.querySelector('input[name="pag"]:checked')?.value;
+
 const nomeUsuario = (u) => u.displayName || u.email.split("@")[0];
 
 /* ---------- Login ---------- */
@@ -75,6 +79,8 @@ $("#produto-form").addEventListener("submit", async (e) => {
     await addDoc(collection(db, "produtos"), {
       nome: $("#p-nome").value.trim(),
       preco: parseFloat($("#p-preco").value),
+      precoCredito: parseFloat($("#p-credito").value),
+      descricao: $("#p-desc").value.trim(),
       qtd: parseInt($("#p-qtd").value, 10),
     });
     e.target.reset();
@@ -91,7 +97,7 @@ function renderProdutos() {
   $("#lista-produtos").innerHTML = lista.length
     ? lista.map((p) => `
       <div class="item">
-        <div><b>${esc(p.nome)}</b><small>${brl(p.preco)}</small></div>
+        <div><b>${esc(p.nome)}</b><small>${brl(p.preco)} · no crédito ${brl(p.precoCredito ?? p.preco)}</small>${p.descricao ? `<span class="desc">${esc(p.descricao)}</span>` : ""}</div>
         <div class="acoes">
           <button class="mini" data-ajuste="-1" data-id="${p.id}" aria-label="Diminuir estoque">−</button>
           <span class="qtd ${p.qtd <= 3 ? "baixo" : ""}">${p.qtd}</span>
@@ -126,10 +132,11 @@ function renderSelect() {
 }
 function atualizaTotal() {
   const p = produtos.find((x) => x.id === $("#v-produto").value);
-  $("#v-total").value = p ? brl(p.preco * (parseInt($("#v-qtd").value, 10) || 0)) : "";
+  $("#v-total").value = p ? brl(precoVenda(p, pagamentoAtual()) * (parseInt($("#v-qtd").value, 10) || 0)) : "";
 }
 $("#v-produto").addEventListener("change", atualizaTotal);
 $("#v-qtd").addEventListener("input", atualizaTotal);
+$("#v-pagamento").addEventListener("change", atualizaTotal);
 
 $("#venda-form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -148,8 +155,8 @@ $("#venda-form").addEventListener("submit", async (e) => {
       if (!p || p.qtd < qtd) throw new Error("estoque");
       tx.update(ref, { qtd: p.qtd - qtd });
       tx.set(doc(collection(db, "vendas")), {
-        produtoId: pid, produto: p.nome, precoUnit: p.preco, qtd,
-        total: p.preco * qtd, pagamento, unidade,
+        produtoId: pid, produto: p.nome, precoUnit: precoVenda(p, pagamento), qtd,
+        total: precoVenda(p, pagamento) * qtd, pagamento, unidade,
         status: pagamento === "Pagamento tardio" ? "pendente" : "pago",
         obs: $("#v-obs").value.trim(),
         vendedor: nomeUsuario(user), vendedorEmail: user.email, vendedorUid: user.uid,
