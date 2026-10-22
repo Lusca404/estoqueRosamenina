@@ -46,7 +46,7 @@
           <b>Produtos</b>
           <small id="info-produtos">Cadastrar e controlar o estoque</small>
         </button>
-        <button class="cartao" data-ir="historico">
+        <button class="cartao so-admin" data-ir="historico">
           <span class="icone"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9 8h6M9 12h6"/></svg></span>
           <b>Vendas realizadas</b>
           <small id="info-vendas">Ver quem vendeu, como e onde</small>
@@ -94,7 +94,7 @@
     <section id="aba-produtos" class="painel" hidden>
       <button class="voltar" data-ir="home">← Início</button>
       <h2>Produtos</h2>
-      <div class="resumo">
+      <div class="resumo so-admin">
         <div class="stat"><small>Produtos cadastrados</small><b id="r-total">0</b></div>
         <div class="stat"><small>Peças em estoque</small><b id="r-pecas">0</b></div>
         <div class="stat"><small>Valor em estoque</small><b id="r-valor">R$ 0,00</b></div>
@@ -114,7 +114,7 @@
         <label class="largo">Nome<input type="text" id="p-nome" required></label>
         <label>Preço (R$)<input type="number" id="p-preco" step="0.01" min="0" required></label>
         <label>Valor no crédito (R$)<input type="number" id="p-credito" step="0.01" min="0" required></label>
-        <label>Estoque<input type="number" id="p-qtd" min="0" required></label>
+        <label id="l-qtd">Estoque<input type="number" id="p-qtd" min="0" required></label>
         <label class="largo">Descrição<textarea id="p-desc" rows="2" placeholder="Ex.: tamanho, cor, material, marca"></textarea></label>
         <div class="botoes largo">
           <button class="btn" type="submit" id="p-salvar">Adicionar produto</button>
