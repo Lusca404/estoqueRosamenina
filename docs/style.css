@@ -116,3 +116,6 @@ legend{font-size:.82rem;font-weight:600;margin-bottom:8px;padding:0}
   .botoes{flex-direction:column}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+body:not(.admin) .so-admin{display:none!important}
+.menu{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
