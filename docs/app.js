@@ -10,6 +10,8 @@ const $ = (s) => document.querySelector(s);
 const brl = (n) => Number(n).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+const ADMIN_EMAIL = "lojarosameninabelem@gmail.com";
+let isAdmin = false;
 let produtos = [];
 let vendasCache = [];
 let editId = null;
@@ -51,6 +53,10 @@ onAuthStateChanged(auth, (user) => {
   unsubs = [];
   $("#login").hidden = !!user;
   $("#app").hidden = !user;
+  isAdmin = !!user && user.email?.toLowerCase() === ADMIN_EMAIL;
+  document.body.classList.toggle("admin", isAdmin);
+  produtos = [];
+  vendasCache = [];
   if (!user) return;
   $("#usuario-nome").textContent = nomeUsuario(user);
   $("#ola-nome").textContent = nomeUsuario(user);
@@ -61,7 +67,8 @@ onAuthStateChanged(auth, (user) => {
       renderProdutos();
       renderSelect();
       renderVendas(vendasCache);
-    }),
+    }));
+  if (isAdmin) unsubs.push(
     onSnapshot(query(collection(db, "vendas"), orderBy("data", "desc"), limit(100)), (snap) => {
       vendasCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       renderVendas(vendasCache);
@@ -71,6 +78,7 @@ onAuthStateChanged(auth, (user) => {
 
 /* ---------- Navegação ---------- */
 function ir(nome) {
+  if (nome === "historico" && !isAdmin) nome = "home";
   document.querySelectorAll("main > section").forEach((s) => (s.hidden = s.id !== "aba-" + nome));
   window.scrollTo(0, 0);
 }
@@ -115,6 +123,8 @@ function resetForm() {
   editId = null;
   $("#produto-form").reset();
   setFoto("");
+  $("#l-qtd").hidden = false;
+  $("#p-qtd").required = true;
   $("#form-titulo").textContent = "Novo produto";
   $("#p-salvar").textContent = "Adicionar produto";
   $("#p-cancelar").hidden = true;
@@ -129,6 +139,8 @@ function editar(id) {
   $("#p-qtd").value = p.qtd;
   $("#p-desc").value = p.descricao || "";
   setFoto(p.foto || "");
+  $("#l-qtd").hidden = !isAdmin;
+  $("#p-qtd").required = isAdmin;
   $("#form-titulo").textContent = "Editar produto";
   $("#p-salvar").textContent = "Salvar alterações";
   $("#p-cancelar").hidden = false;
@@ -142,10 +154,11 @@ $("#produto-form").addEventListener("submit", async (e) => {
     nome: $("#p-nome").value.trim(),
     preco: parseFloat($("#p-preco").value),
     precoCredito: parseFloat($("#p-credito").value),
-    qtd: parseInt($("#p-qtd").value, 10),
     descricao: $("#p-desc").value.trim(),
     foto: fotoAtual,
   };
+  // quem não é administradora não altera a quantidade de um produto já cadastrado
+  if (!editId || isAdmin) dados.qtd = parseInt($("#p-qtd").value, 10);
   try {
     if (editId) await updateDoc(doc(db, "produtos", editId), dados);
     else await addDoc(collection(db, "produtos"), dados);
@@ -157,6 +170,7 @@ $("#produto-form").addEventListener("submit", async (e) => {
 $("#busca").addEventListener("input", renderProdutos);
 
 function renderResumo() {
+  if (!isAdmin) return;
   const baixo = produtos.filter((p) => p.qtd > 0 && p.qtd <= 3).length;
   const zero = produtos.filter((p) => p.qtd <= 0).length;
   $("#r-total").textContent = produtos.length;
@@ -170,7 +184,7 @@ function renderResumo() {
 
 function renderProdutos() {
   renderResumo();
-  $("#info-produtos").textContent = produtos.length ? `${produtos.length} cadastrados · ${produtos.reduce((s, p) => s + p.qtd, 0)} peças em estoque` : "Cadastrar e controlar o estoque";
+  $("#info-produtos").textContent = !isAdmin ? "Cadastrar e editar produtos" : produtos.length ? `${produtos.length} cadastrados · ${produtos.reduce((s, p) => s + p.qtd, 0)} peças em estoque` : "Cadastrar e controlar o estoque";
   const termo = $("#busca").value.toLowerCase();
   const lista = produtos.filter((p) => p.nome.toLowerCase().includes(termo));
   $("#lista-produtos").innerHTML = lista.length
@@ -180,11 +194,11 @@ function renderProdutos() {
           <div><b>${esc(p.nome)}</b><small>${brl(p.preco)} · no crédito ${brl(p.precoCredito ?? p.preco)}</small>${p.descricao ? `<span class="desc">${esc(p.descricao)}</span>` : ""}</div>
         </div>
         <div class="acoes">
-          <button class="mini" data-ajuste="-1" data-id="${p.id}" aria-label="Diminuir estoque">−</button>
+          ${isAdmin ? `<button class="mini" data-ajuste="-1" data-id="${p.id}" aria-label="Diminuir estoque">−</button>
           <span class="qtd ${p.qtd <= 3 ? "baixo" : ""}">${p.qtd}</span>
-          <button class="mini" data-ajuste="1" data-id="${p.id}" aria-label="Aumentar estoque">+</button>
+          <button class="mini" data-ajuste="1" data-id="${p.id}" aria-label="Aumentar estoque">+</button>` : ""}
           <button class="mini ed" data-edit="${p.id}">Editar</button>
-          <button class="mini del" data-del="${p.id}">Excluir</button>
+          ${isAdmin ? `<button class="mini del" data-del="${p.id}">Excluir</button>` : ""}
         </div>
       </div>`).join("")
     : `<p class="vazio">Nenhum produto por aqui. Adicione o primeiro acima.</p>`;
@@ -193,6 +207,7 @@ function renderProdutos() {
 $("#lista-produtos").addEventListener("click", async (e) => {
   const b = e.target.closest("button");
   if (!b) return;
+  if (!isAdmin && (b.dataset.ajuste || b.dataset.del)) return;
   try {
     if (b.dataset.edit) {
       editar(b.dataset.edit);
@@ -212,7 +227,7 @@ function renderSelect() {
   const atual = $("#v-produto").value;
   $("#v-produto").innerHTML =
     `<option value="" disabled ${atual ? "" : "selected"}>Escolha um produto</option>` +
-    produtos.map((p) => `<option value="${p.id}" ${p.qtd < 1 ? "disabled" : ""} ${p.id === atual ? "selected" : ""}>${esc(p.nome)} — ${brl(p.preco)} (${p.qtd} em estoque)</option>`).join("");
+    produtos.map((p) => `<option value="${p.id}" ${p.qtd < 1 ? "disabled" : ""} ${p.id === atual ? "selected" : ""}>${esc(p.nome)} — ${brl(p.preco)} ${isAdmin ? ` (${p.qtd} em estoque)` : p.qtd < 1 ? " (esgotado)" : ""}</option>`).join("");
   atualizaTotal();
 }
 function atualizaTotal() {
